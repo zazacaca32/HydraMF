@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="connData">Введите адрес устройства:<input id="ip" type="text" placeholder="192.168.x.x" name=""><button onclick="connectDevice()">Connect</button></div><br>
+    <div id="deviceInfo" style="display: none;">
+        <p> Имя устройства: <b id="deviceInfo-name">4</b></p>
+        <p> Точка доступа: <b id="deviceInfo-ap">3</b></p>
+        <p> Температура: <b id="deviceInfo-temp">2</b></p>
+        <p> Влажность: <b id="deviceInfo-humidity">1</b></p>
+        <p> Давление: <b id="deviceInfo-pressure">0</b></p>
+    </div>
+    <table class="tblSetup" id="tblSetup" align="center" style="display: none">
+        <tr>
+            <td>
+                <div class=adaptiveTEXT>
+                    <div>
+                        Подключение Wi-fi
+                    </div>
+                    <br>
+                    <div>
+                        <div id="wifiList">
+                        </div>
+                    </div>
+                    <div style="text-align: center;">
+                        <br>
+                        <input class="controlSetup" value="Сохранить" onclick="setWifi()" type="submit">
+                    </div>
+                    
+                </div>
+            </td>
+        </tr>
+    </table>
+    <br>
+                    <div>
+                        <input class="controlSetup" value="Перезагрузить устройство" onclick="restart(this);" type="button">
+                        <input class="controlSetup" value="Сбросить до заводских настроек" onclick="reset(this);" type="button">
+                    </div>
+    <script>
+    const connData = document.getElementById("connData");
+    const deviceInfo = document.getElementById("deviceInfo");
+    const table = document.getElementById("tblSetup");
+    const device_name = document.getElementById("deviceInfo-name");
+    const ap = document.getElementById("deviceInfo-ap");
+    const temp = document.getElementById("deviceInfo-temp");
+    const humidity = document.getElementById("deviceInfo-humidity");
+    const pressure = document.getElementById("deviceInfo-pressure");
+    const wifiList = document.getElementById("wifiList");
+
+    const urlParams = new URLSearchParams(window.location.search);
+    var deviceIp = urlParams.get("ip");
+    console.log(deviceIp);
+    if (deviceIp) {
+        //document.getElementById("ip").value = deviceIp;
+        connData.style.display = "none"
+        connectDevice();
+    }
+
+    function setInfo(info) {
+        deviceInfo.style.display = "block"
+        device_name.innerText = info.device_name
+        ap.innerText = info.wifiAP
+        temp.innerText = info.temp.toFixed(2)
+        humidity.innerText = info.humidity.toFixed(2)
+        pressure.innerText = info.pressure.toFixed(2)
+    }
+
+    function getWifi() {
+        wifiList.innerText = "";
+        fetch(`http://${deviceIp}/info/wifi`).then((r) => r.json()).then((r) => {
+            if (!r.success) return;
+
+            table.style.display = "table"
+
+            r.list.sort(function(a, b) {
+                return a.rssi - b.rssi;
+            });
+            let html = "";
+            for (const i in r.list) {
+                const wifi = r.list[i];
+                // console.log(wifi)
+                html = `<div>
+	      <input id="signalStrength${i}" value="${wifi.rssi}" class="controlSetup" placeholder="dBm"  size=4>
+              <input id="ssidName${i}" value="${wifi.ssid}" class="controlSetup" placeholder="Имя WiFi сети" >
+              <input class="input input--with-active" id="ssidPassword${i}" data-ssid="${wifi.ssid}" type="password" class="controlSetup" placeholder="Пароль">
+			  <input id="checkbox${i}" type="checkbox" name="checkbox${i}"  class="button-indication button-indication--visibility-off" onclick="passwordVisibility(this)"></div>`;
+                wifiList.insertAdjacentHTML("afterbegin", html);
+            }
+            console.log(r);
+        }).catch(_err)
+    }
+
+    function connectDevice() {
+        if (!deviceIp) deviceIp = document.getElementById("ip").value;
+
+        fetch(`http://${deviceIp}/info/device`).then((r) => r.json()).then((r) => {
+            setInfo(r);
+            getWifi();
+            console.log(r);
+        }).catch(_err)
+    }
+
+    function setWifi() {
+        var wifiarr = [];
+
+        for (const i in wifiList.childNodes) {
+            if (wifiList.childNodes[i].nodeName != "DIV") continue;
+            var pass_input = wifiList.childNodes[i].getElementsByClassName("input")[0];
+            if (pass_input.value == "") continue;
+            wifiarr.push({ ssid: pass_input.dataset.ssid, password: pass_input.value })
+        }
+
+        if (wifiarr.length == 0) return;
+
+        fetch(`http://${deviceIp}/set/wifi`, {
+            method: "POST",
+            body: JSON.stringify({list: wifiarr})
+        })
+        table.style.display = "none"
+    }
+
+    function _err(err) {
+        console.log(err)
+        alert("error")
+        location.reload()
+    }
+
+function restart(e) {
+    if (confirm("Вы действительно хотите перезагрузить устройство?")){
+         fetch(`http://${deviceIp}/?restart=1`).then((r) => r.json()).then((r) => {
+            console.log(r);
+        }).catch(_err)
+         setTimeout(()=>{location.reload();},5000)
+    }
+}
+
+function reset(e) {
+    if (confirm("Вы действительно хотите сбросить устройство до заводских настроек?")){
+         fetch(`http://${deviceIp}/?reset=1`).then((r) => r.json()).then((r) => {
+            console.log(r);
+        }).catch(_err)
+         // setTimeout(()=>{location.reload();},5000)
+    }
+}
+
+    function passwordVisibility(e) {
+        let input = e.parentElement.querySelector(".input"),
+            btn = e.parentElement.querySelector(".button-indication");
+
+        if (input.type === "password")
+            input.type = "text";
+        else
+            input.type = "password";
+
+        btn.classList.toggle("button-indication--visibility-off");
+        btn.classList.toggle("button-indication--visibility");
+    }
+    </script>
+</body>
+
+</html>

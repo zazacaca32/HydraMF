@@ -1,0 +1,2 @@
+java -jar EspStackTraceDecoder.jar C:\Users\Alexander\.platformio\packages\toolchain-xtensa\bin\xtensa-lx106-elf-addr2line.exe C:\Users\Alexander\Documents\PlatformIO\Projects\hydraPK\.pio\build\d1_mini\firmware.elf dump.txt
+pause

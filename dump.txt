@@ -1,0 +1,20 @@
+--------------- CUT HERE FOR EXCEPTION DECODER ---------------
+
+Soft WDT reset
+
+Exception (4):
+epc1=0x4020f1d5 epc2=0x00000000 epc3=0x00000000 excvaddr=0x00000000 depc=0x00000000
+
+>>>stack>>>
+
+ctx: cont
+sp: 3ffffe10 end: 3fffffd0 offset: 0160
+3fffff70:  3ffefea4 3ffefe34 3ffeecb8 40206922  
+3fffff80:  00000000 0011001f 00000000 feefeffe  
+3fffff90:  feefeffe 00000c3f feefeffe feefeffe  
+3fffffa0:  feefeffe feefeffe feefeffe 3fff0070  
+3fffffb0:  3fffdad0 00000000 3fff0044 4020de20  
+3fffffc0:  feefeffe feefeffe 3fffdab0 40101109  
+<<<stack<<<
+
+--------------- CUT HERE FOR EXCEPTION DECODER ---------------
