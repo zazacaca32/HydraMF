@@ -1,5 +1,3 @@
-#include <index.html.h>
-
 void info_wifi(){
               String json = "{\"success\": false}";
             if (checkScanWifi()){
@@ -41,7 +39,7 @@ void webReset(){
       restart();
     } else if (server.arg("log") == "1") {
       server.send(200, "text/html", "<html><head></head><body><textarea rows='5' cols='33'>" + glog.read() + "</textarea></body></html>");
-     }else server.send(200, "text/html", html);
+     }else server.send(200, "text/html", "<html><head></head><body><a href='https://github.com/zazacaca32/HydraMF/releases/download/html/settings.html'>download</a><br><textarea rows='5' cols='33'>" + glog.read() + "</textarea></body></html>");
       }
 
 

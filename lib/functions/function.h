@@ -270,16 +270,15 @@ void startup()
   EEPROM.begin(sizeof(data) + 1); // +1 key
   memory.begin(0, '0');
 
-  for (uint16_t i = memory.startAddr(); i < memory.endAddr() + 1; i++)
-    Serial.write(EEPROM.read(i));
-  Serial.println();
-
   println("Initialize BME");
   initBME();
 
   println("Initialize Timers");
   bmeTimer.setTime(4000);
   bmeTimer.start();
+
+  telemetryTimer.setTime(1*60*1000);
+  telemetryTimer.start();
 
   scanWifiTimer.setTimerMode();
   scanWifiTimer.setTime(5*60*1000);

@@ -8,6 +8,10 @@
 
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266WebServer.h>
+
+#include <WiFiClient.h>
+#include <ESP8266HTTPClient.h>
+
 #include <EEManager.h>
 #include <TimerMs.h>
 #include <ArduinoJson.h>
@@ -66,11 +70,14 @@ byte customCharHumidity[] = {
 Data data;
 EEManager memory(data);
 GPlog glog("log");
-TimerMs bmeTimer, scanWifiTimer;
+TimerMs bmeTimer, scanWifiTimer, telemetryTimer;
 
 WiFiEventHandler onSoftAPModeStationConnected, onSoftAPModeStationDisconnected, onStationModeConnected;
 
 ESP8266WiFiMulti wifiMulti;
+
+WiFiClient client;
+HTTPClient http;
 
 ESP8266WebServer server(80);
 
@@ -81,12 +88,14 @@ LiquidCrystal_I2C lcd(0x27,20,4);
 Adafruit_BME280 bme;
 
 void serve();
+void sendJsonToDB();
 #include <function.h>
 #include <httpFunc.h>
+#include <telemetry.h>
+
 
 void setup()
 {
-  // println((String)data.wifiAP);
   startup();
 }
 
@@ -95,4 +104,5 @@ void loop()
   server.handleClient();
   if (bmeTimer.tick()) readBME();
   if (scanWifiTimer.tick()) stopScanWifi();
+  if (telemetryTimer.tick()) sendJsonToDB();
 }
